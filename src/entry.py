@@ -28,7 +28,12 @@ async def run_code(request: Request,):
         tb = '\n'.join(lines[:1] + lines[3:])
 
         tb = tb.replace('File "<string>"', 'Request code')
-        return Response.new(tb)
+        output_value = output.getvalue()
+        if output_value:
+            error = f'Output:\n{output.getvalue()}\n\n{tb}\n'
+        else:
+            error = f'{tb}\n'
+        return Response.new(error, status=400)
     else:
         return Response.new(output.getvalue())
 
@@ -56,19 +61,18 @@ print(2 ** 15)
     <input type="submit" value="Run">
   </form>
   <pre id="output" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
-  <script>
-    const output = document.querySelector('#output')
-    output.textContent = ''
-    document.querySelector('form').addEventListener('submit', async (e) => {
-      e.preventDefault()
-      const body = document.querySelector('textarea').value
-      const response = await fetch('', {method: 'POST', body});
-      output.textContent = await response.text()
-    });
-  </script>
 </div>
-"""
-    )
+<script>
+  const output = document.querySelector('#output')
+  output.textContent = ''
+  document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const body = document.querySelector('textarea').value
+    const response = await fetch('', {method: 'POST', body});
+    output.textContent = await response.text()
+  });
+</script>
+""")
     # is this really how I have to set the content type?
     response.headers.set('Content-Type', 'text/html')
     return response
